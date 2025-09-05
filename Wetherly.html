@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Weatherly • Fast Weather App</title>
-  <!-- Tailwind Play CDN for quick styling -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,7 +23,7 @@
 </head>
 <body class="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-slate-100">
   <div class="max-w-5xl mx-auto px-4 py-6 md:py-10">
-    <!-- Header -->
+    
     <header class="flex items-center justify-between mb-6">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center shadow">
@@ -39,7 +38,6 @@
       </div>
     </header>
 
-    <!-- Search + Geolocate -->
     <section class="mb-6 grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3">
       <div class="flex gap-2">
         <input id="cityInput" type="text" placeholder="Search city (e.g., Lucknow, Gorakhpur)" class="flex-1 px-4 py-3 rounded-2xl bg-white/10 placeholder-slate-400 outline-none focus:ring-2 focus:ring-sky-400"/>
@@ -48,7 +46,7 @@
       <button id="geoBtn" class="px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20">📍 Use my location</button>
     </section>
 
-    <!-- Summary Cards -->
+    
     <section id="summary" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
       <div class="glass rounded-2xl p-5 border border-white/10 shadow">
         <div class="text-sm opacity-75">Location</div>
@@ -70,7 +68,7 @@
       </div>
     </section>
 
-    <!-- Map + Hourly Chart -->
+   
     <section class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
       <div class="glass rounded-2xl p-4 border border-white/10 shadow">
         <div class="flex items-center justify-between mb-2">
@@ -88,7 +86,7 @@
       </div>
     </section>
 
-    <!-- 5‑Day Forecast -->
+   
     <section class="glass rounded-2xl p-4 border border-white/10 shadow mb-10">
       <h2 class="font-semibold mb-3">5‑Day Forecast</h2>
       <div id="daily" class="grid grid-cols-2 md:grid-cols-5 gap-3"></div>
@@ -98,10 +96,10 @@
   </div>
 
   <script>
-    // ------------------ Utilities ------------------
+  
     const $ = (sel) => document.querySelector(sel);
     const unitBtn = $('#unitToggle');
-    let useCelsius = true; // default
+    let useCelsius = true; 
 
     const weatherCodeMap = {
       0: 'Clear sky',
@@ -138,9 +136,9 @@
       return d.toLocaleDateString([], { weekday: 'short', day: '2-digit', month: 'short', timeZone: tz });
     }
 
-    // ------------------ Map ------------------
+    
     let map, marker;
-    function initMap(lat = 26.8467, lon = 80.9462) { // default: Lucknow
+    function initMap(lat = 26.8467, lon = 80.9462) { 
       map = L.map('map', { zoomControl: false }).setView([lat, lon], 10);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
@@ -155,7 +153,7 @@
       if (marker) { marker.setLatLng([lat, lon]); } else { marker = L.marker([lat, lon]).addTo(map); }
     }
 
-    // ------------------ API ------------------
+    
     async function geocodeCity(name) {
       const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=1&language=en&format=json`;
       const res = await fetch(url);
@@ -180,7 +178,7 @@
       return res.json();
     }
 
-    // Optional: try weather warnings (may not exist for all regions); ignore errors
+    
     async function getWarnings(lat, lon) {
       try {
         const url = `https://api.open-meteo.com/v1/warnings?latitude=${lat}&longitude=${lon}&language=en`;
@@ -190,7 +188,7 @@
       } catch { return null; }
     }
 
-    // ------------------ UI Update ------------------
+    
     function renderHourly(hourly, tz) {
       const now = new Date();
       const items = [];
@@ -244,7 +242,7 @@
     }
 
     function convertAllTemps(root = document) {
-      // Re-render sections to apply unit change (we store raw °C values in datasets if needed)
+     
       if (window.__lastData) {
         const { locObj, current, daily, hourly, tz } = window.__lastData;
         renderSummary(locObj, current, daily, tz);
@@ -254,7 +252,7 @@
     }
 
     async function loadByCoords(lat, lon) {
-      // Reverse geocode minimal (Open‑Meteo doesn't provide reverse, so keep simple name)
+      
       const pseudoLoc = { name: 'Selected location', admin1: '', country: '', latitude: lat, longitude: lon };
       updateMap(lat, lon);
       const data = await getWeather(lat, lon, 'auto');
@@ -267,7 +265,7 @@
       renderDaily(daily, tz);
       renderHourly(hourly, tz);
 
-      // Try warnings (best-effort)
+      
       const warn = await getWarnings(lat, lon);
       if (warn?.warnings?.length) {
         const box = document.createElement('div');
@@ -292,7 +290,7 @@
       renderDaily(daily, tz);
       renderHourly(hourly, tz);
 
-      // Try warnings
+      
       const warn = await getWarnings(loc.latitude, loc.longitude);
       if (warn?.warnings?.length) {
         const box = document.createElement('div');
@@ -303,16 +301,16 @@
       }
     }
 
-    // ------------------ Events ------------------
+    
     window.addEventListener('DOMContentLoaded', async () => {
       initMap();
 
-      // Default load by IP-less geolocation fallback: try browser geo
+      
       try {
         navigator.geolocation.getCurrentPosition(async (pos) => {
           await loadByCoords(pos.coords.latitude, pos.coords.longitude);
         }, async () => {
-          // Fallback to Lucknow
+          
           await loadByCity('Lucknow');
         }, { enableHighAccuracy: true, timeout: 5000, maximumAge: 300000 });
       } catch {
